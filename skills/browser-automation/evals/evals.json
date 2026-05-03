@@ -1,0 +1,129 @@
+{
+  "skill_name": "browser-automation",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Open https://example.com in the browser and click the first link on the page.",
+      "expected_output": "Claude navigates to the URL, runs the snapshot script to find visible links, identifies the first one by ref, and clicks it using [data-claude-ref=\"ref1\"] (or whichever ref the link got). Does NOT derive a CSS selector from raw HTML.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "snapshot_before_click",
+          "description": "Ran the snapshot script via mcp__chromium__evaluate before clicking any element"
+        },
+        {
+          "id": "used_data_claude_ref",
+          "description": "Used [data-claude-ref=\"refN\"] as the CSS selector when calling mcp__chromium__click"
+        },
+        {
+          "id": "no_raw_html_selector",
+          "description": "Did NOT derive a CSS selector directly from raw HTML without going through the snapshot"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Go to https://news.ycombinator.com and click on the 'new' link in the top navigation.",
+      "expected_output": "Claude navigates, runs the snapshot, scans the element map for a link labelled 'new', and clicks via its data-claude-ref. Re-runs snapshot after the page changes if needed.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "snapshot_before_click",
+          "description": "Ran the snapshot script via mcp__chromium__evaluate before clicking any element"
+        },
+        {
+          "id": "used_data_claude_ref",
+          "description": "Used [data-claude-ref=\"refN\"] as the CSS selector when calling mcp__chromium__click"
+        },
+        {
+          "id": "matched_by_label",
+          "description": "Identified the 'new' link by scanning the snapshot element labels (not by hardcoding a known selector)"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Open https://duckduckgo.com, type 'Raspberry Pi 5' in the search box and submit the search.",
+      "expected_output": "Claude navigates to DuckDuckGo, runs the snapshot to find the search input, fills it with the search term via [data-claude-ref], then finds and clicks the search button (or presses Enter). Re-runs snapshot after results load before any further interaction.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "snapshot_before_fill",
+          "description": "Ran the snapshot script via mcp__chromium__evaluate before filling the search input"
+        },
+        {
+          "id": "used_data_claude_ref_for_fill",
+          "description": "Used [data-claude-ref=\"refN\"] as the CSS selector when calling mcp__chromium__fill"
+        },
+        {
+          "id": "submitted_search",
+          "description": "Submitted the search (clicked search button or pressed Enter) after filling the input"
+        },
+        {
+          "id": "re_snapshot_after_results",
+          "description": "Re-ran the snapshot after the results page loaded before any further interactions"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Go to https://www.npmjs.com, search for 'axios', and click on the 'axios' package to open its page. Report the final URL you ended up on.",
+      "expected_output": "Agent navigates to npmjs.com, fills the search box, waits for dynamic results to load, identifies the correct axios package link from the results, clicks it, and ends up at https://www.npmjs.com/package/axios. Completes cleanly without retries.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "task_completed",
+          "description": "Final URL is https://www.npmjs.com/package/axios (or contains '/package/axios')"
+        },
+        {
+          "id": "no_failed_attempts",
+          "description": "No click errors, selector-not-found errors, or retries were needed"
+        },
+        {
+          "id": "tool_calls_under_12",
+          "description": "Total MCP tool calls used was 12 or fewer (self-reported count)"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Go to https://github.com/axios/axios, click the Issues tab, then click on the first open issue in the list. Report the issue title and final URL.",
+      "expected_output": "Agent navigates to the repo, clicks Issues tab (DOM changes), re-orients on the new page, clicks the first open issue (second DOM change), and reports the issue title and a URL containing /issues/. Completes without errors across both DOM transitions.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "task_completed",
+          "description": "Final URL contains 'github.com/axios/axios/issues/' followed by an issue number"
+        },
+        {
+          "id": "no_failed_attempts",
+          "description": "No click errors, wrong-element clicks, or retries were needed across the two navigation steps"
+        },
+        {
+          "id": "tool_calls_under_15",
+          "description": "Total MCP tool calls used was 15 or fewer (self-reported count)"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Go to https://en.wikipedia.org/wiki/Raspberry_Pi and click the 'History' link in the table of contents to jump to that section. Report how you identified the correct link among the many TOC entries.",
+      "expected_output": "Agent navigates to the Wikipedia article, identifies the History TOC link among many similar-looking TOC links, clicks the correct one. The page scrolls to or navigates to the History section. Agent explains how it distinguished the right link from the others.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "task_completed",
+          "description": "Clicked the History link — final URL contains '#History' or agent confirms the page scrolled to the History section"
+        },
+        {
+          "id": "correct_link_identified",
+          "description": "Agent correctly identified the History TOC link and not a different section or inline 'History' mention"
+        },
+        {
+          "id": "no_failed_attempts",
+          "description": "No wrong clicks, selector errors, or retries needed despite the many similar TOC entries"
+        }
+      ]
+    }
+  ]
+}
