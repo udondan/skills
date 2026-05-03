@@ -11,10 +11,10 @@ This makes automation more reliable on dynamic pages, pages with ambiguous marku
 ## Installation
 
 ```bash
-claude skill install browser-automation
+npx skills add udondan/skills --skill browser-automation
 ```
 
-Requires an MCP server that exposes `mcp__chromium__*` tools (navigate, evaluate, click, fill, etc.). Compatible with [mcp-chromium](https://github.com/anthropics/mcp-chromium) and similar Chromium-based MCP servers.
+Requires an MCP server that exposes `mcp__chromium__*` tools (navigate, evaluate, click, fill, etc.). Compatible with [mcp-chromium-arm64](https://github.com/nfodor/mcp-chromium-arm64) and similar Chromium-based MCP servers.
 
 ## Usage
 
@@ -36,7 +36,7 @@ The idea is directly lifted from how `claude --chrome` works internally.
 
 This skill approximates that same pattern for MCP Chromium servers, which only expose raw CSS-selector-based tools (`mcp__chromium__click(selector)`). Instead of an accessibility tree, a small JS snippet injected via `mcp__chromium__evaluate` walks the live DOM, finds all visible interactive elements, assigns `data-claude-ref="ref1"`, `ref2`, etc., and returns the same kind of semantic list. Claude then clicks by ref instead of UID.
 
-The result is the same: Claude reasons about elements by what they *mean*, not where they are in the markup.
+The result is the same: Claude reasons about elements by what they _mean_, not where they are in the markup.
 
 ## Why this approach
 
@@ -53,12 +53,12 @@ The snapshot script interrogates the live DOM — what's actually rendered and v
 
 Tested against 6 evals across simple, dynamic, and multi-step scenarios:
 
-| | With skill | Without skill |
-|---|---|---|
-| Pass rate | **100%** | 43% |
-| npm dynamic search — tool calls | 7 | 8 |
-| GitHub multi-step — tool calls | 6 | 8 |
-| Wikipedia TOC (many similar links) — tool calls | **5** | **12** |
+|                                                 | With skill | Without skill |
+| ----------------------------------------------- | ---------- | ------------- |
+| Pass rate                                       | **100%**   | 43%           |
+| npm dynamic search — tool calls                 | 7          | 8             |
+| GitHub multi-step — tool calls                  | 6          | 8             |
+| Wikipedia TOC (many similar links) — tool calls | **5**      | **12**        |
 
 Without the skill, the agent succeeded on simple tasks but hit token-limit errors on `get_content`, needed screenshot fallbacks, and made syntax errors in ad-hoc `evaluate` calls — resulting in 2.4× more tool calls on complex pages.
 
@@ -68,15 +68,15 @@ Without the skill, the agent succeeded on simple tasks but hit token-limit error
 
 We ran the same evals against both, using `--headed` mode for agent-browser to match our MCP Chromium's non-headless configuration. Two findings:
 
-**1. Snapshot size.** The a11y tree on real pages is large. agent-browser's `snapshot -i` returned 48K characters for the GitHub repo homepage, 81K for a Wikipedia article, and 34K for the npmjs.com package page. Our script filters to *visible interactive elements only* — it ignores structural nodes, headings, and invisible elements — so the output stays compact regardless of page complexity. On token-constrained tasks this is a meaningful difference.
+**1. Snapshot size.** The a11y tree on real pages is large. agent-browser's `snapshot -i` returned 48K characters for the GitHub repo homepage, 81K for a Wikipedia article, and 34K for the npmjs.com package page. Our script filters to _visible interactive elements only_ — it ignores structural nodes, headings, and invisible elements — so the output stays compact regardless of page complexity. On token-constrained tasks this is a meaningful difference.
 
 **2. Command count.** On equivalent tasks:
 
-| Task | Our skill (MCP calls) | agent-browser (Bash calls) |
-|---|---|---|
-| npm search + click package | **7**, no retries | 19, 1 session retry |
-| GitHub repo → Issues → first issue | **6** | 8 |
-| Wikipedia TOC → History | **5** | 8, 1 syntax error |
+| Task                               | Our skill (MCP calls) | agent-browser (Bash calls) |
+| ---------------------------------- | --------------------- | -------------------------- |
+| npm search + click package         | **7**, no retries     | 19, 1 session retry        |
+| GitHub repo → Issues → first issue | **6**                 | 8                          |
+| Wikipedia TOC → History            | **5**                 | 8, 1 syntax error          |
 
 The command count difference comes partly from retries and errors, partly from agent-browser needing explicit `get url` and `close` calls that our approach doesn't require.
 
