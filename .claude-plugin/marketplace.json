@@ -1,0 +1,24 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "udondan",
+  "owner": {
+    "name": "udondan",
+    "url": "https://github.com/udondan"
+  },
+  "metadata": {
+    "description": "Claude Code plugins for udondan's command-line tools.",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "reminders-cli",
+      "description": "Read, add, edit, complete and delete macOS Reminders from the command line.",
+      "category": "productivity",
+      "homepage": "https://github.com/udondan/reminders-cli",
+      "source": {
+        "source": "github",
+        "repo": "udondan/reminders-cli"
+      }
+    }
+  ]
+}
